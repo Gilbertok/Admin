@@ -1,15 +1,15 @@
 package com.bograntex.bograntexAdmin.view.contabilidade;
 
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.bograntex.bograntexAdmin.domain.Transaction;
 import com.bograntex.bograntexAdmin.event.DashboardEvent.BrowserResizeEvent;
+import com.bograntex.bograntexAdmin.model.BalancoLojaModel;
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.data.provider.ListDataProvider;
 import com.vaadin.navigator.View;
@@ -25,19 +25,19 @@ import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
 import com.vaadin.ui.SingleSelect;
 import com.vaadin.ui.VerticalLayout;
-import com.vaadin.ui.renderers.NumberRenderer;
 import com.vaadin.ui.themes.ValoTheme;
 
 @SuppressWarnings("serial")
 public final class ContabilidadeView extends VerticalLayout implements View {
 
-    private final Grid<Transaction> grid;
-    private SingleSelect<Transaction> singleSelect;
+    private final Grid<BalancoLojaModel> grid;
+    private SingleSelect<BalancoLojaModel> singleSelect;
     private Button createReport;
     private static final DateFormat DATEFORMAT = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
     private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
-    private static final Set<Column<Transaction, ?>> collapsibleColumns = new LinkedHashSet<>();
+    private static final Set<Column<BalancoLojaModel, ?>> collapsibleColumns = new LinkedHashSet<>();
 
+    
     public ContabilidadeView() {
         setSizeFull();
         addStyleName("transactions");
@@ -45,7 +45,7 @@ public final class ContabilidadeView extends VerticalLayout implements View {
         setSpacing(false);
         addComponent(buildToolbar());
 
-        grid = buildGrid();
+        grid = buildGridTeste();
         singleSelect = grid.asSingleSelect();
         addComponent(grid);
         setExpandRatio(grid, 1);
@@ -81,36 +81,53 @@ public final class ContabilidadeView extends VerticalLayout implements View {
         createReport.setEnabled(false);
         return createReport;
     }
+    
+    private Grid<BalancoLojaModel> buildGridTeste() {
+    	Grid<BalancoLojaModel> grid = new Grid<>();
+    	grid.setSelectionMode(SelectionMode.SINGLE);
+    	grid.setSizeFull();
+    	grid.addColumn(BalancoLojaModel::getCnpjLojaFormat).setCaption("Cnpj");
+//    	grid.addColumn(BalancoLojaModel::getItem).setCaption("Item");
+    	grid.addColumn(BalancoLojaModel::getEan13).setCaption("Ean13");
+    	grid.addColumn(BalancoLojaModel::getMes).setCaption("Mes");
+    	grid.addColumn(BalancoLojaModel::getAno).setCaption("Ano");
+    	grid.addColumn(BalancoLojaModel::getQtdeEstoque).setCaption("Quantidade");
+    	grid.addColumn(BalancoLojaModel::getPrecoMedio).setCaption("Preço Médio");
+    	try {
+			grid.setItems(new BalancoLojaModel().geraBalancoLojaMes());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	return grid;
+    }
 
-    private Grid<Transaction> buildGrid() {
-        final Grid<Transaction> grid = new Grid<>();
+    private Grid<BalancoLojaModel> buildGrid() {
+        Grid<BalancoLojaModel> grid = new Grid<>();
         grid.setSelectionMode(SelectionMode.SINGLE);
         grid.setSizeFull();
 
-        Column<Transaction, String> time = grid.addColumn(transaction -> DATEFORMAT.format(transaction.getTime()));
-        time.setId("Time").setHidable(true);
-
-        collapsibleColumns.add(grid.addColumn(Transaction::getCountry).setId("Country"));
-        collapsibleColumns.add(grid.addColumn(Transaction::getCity).setId("City"));
-        collapsibleColumns.add(grid.addColumn(Transaction::getTheater).setId("Theater"));
-        collapsibleColumns.add(grid.addColumn(Transaction::getRoom).setId("Room"));
-        collapsibleColumns.add(grid.addColumn(Transaction::getRoom).setId("Title"));
-        collapsibleColumns.add(grid.addColumn(Transaction::getSeats, new NumberRenderer()).setId("Seats"));
-        grid.addColumn(transaction -> "$" + DECIMALFORMAT.format(transaction.getPrice())).setId("Price").setHidable(true);
-
+        collapsibleColumns.add(grid.addColumn(BalancoLojaModel::getCnpjLojaFormat).setId("Cnpj"));
+//        collapsibleColumns.add(grid.addColumn(BalancoLojaModel::getItem).setId("Item"));
+        collapsibleColumns.add(grid.addColumn(BalancoLojaModel::getEan13).setId("Ean13"));
+        grid.addColumn(transaction -> "$" + DECIMALFORMAT.format(transaction.getPrecoMedio())).setId("PrecoMedio").setHidable(true);
         grid.setColumnReorderingAllowed(true);
-        ListDataProvider<Transaction> dataProvider = com.vaadin.data.provider.DataProvider.ofCollection(new ArrayList<>());
-//        ListDataProvider<Transaction> dataProvider = com.vaadin.data.provider.DataProvider.ofCollection(AppUI.getDataProvider().getRecentTransactions(200));
-        dataProvider.addSortComparator(Comparator.comparing(Transaction::getTime).reversed()::compare);
-        grid.setDataProvider(dataProvider);
-
-        grid.addSelectionListener(event -> createReport.setEnabled(!singleSelect.isEmpty()));
+        
+        ListDataProvider<BalancoLojaModel> dataProvider;
+		try {
+//			dataProvider = com.vaadin.data.provider.DataProvider.ofCollection(new BalancoLojaModel().geraBalancoLojaMes());
+//			dataProvider.addSortComparator(Comparator.comparing(BalancoLojaModel::getMes).reversed()::compare);
+//			grid.setDataProvider(dataProvider);
+//			grid.addSelectionListener(event -> createReport.setEnabled(!singleSelect.isEmpty()));
+	        grid.setItems(new BalancoLojaModel().geraBalancoLojaMes());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
         return grid;
     }
 
     private boolean defaultColumnsVisible() {
         boolean result = true;
-        for (Column<Transaction, ?> column : collapsibleColumns) {
+        for (Column<BalancoLojaModel, ?> column : collapsibleColumns) {
             if (column.isHidden() == Page.getCurrent().getBrowserWindowWidth() < 800) {
                 result = false;
             }
@@ -121,7 +138,7 @@ public final class ContabilidadeView extends VerticalLayout implements View {
     @Subscribe
     public void browserResized(final BrowserResizeEvent event) {
         if (defaultColumnsVisible()) {
-            for (Column<Transaction, ?> column : collapsibleColumns) {
+            for (Column<BalancoLojaModel, ?> column : collapsibleColumns) {
                 column.setHidden(Page.getCurrent().getBrowserWindowWidth() < 800);
             }
         }
