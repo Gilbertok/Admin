@@ -1,8 +1,10 @@
 package com.bograntex.bograntexAdmin;
 
+import java.sql.SQLException;
 import java.util.Locale;
 
 import com.bograntex.bograntexAdmin.data.DataProvider;
+import com.bograntex.bograntexAdmin.data.UserData;
 import com.bograntex.bograntexAdmin.domain.User;
 import com.bograntex.bograntexAdmin.dummy.DummyDataProvider;
 import com.bograntex.bograntexAdmin.event.DashboardEvent.BrowserResizeEvent;
@@ -12,6 +14,7 @@ import com.bograntex.bograntexAdmin.event.DashboardEvent.UserLoginRequestedEvent
 import com.bograntex.bograntexAdmin.event.DashboardEventBus;
 import com.bograntex.bograntexAdmin.view.LoginView;
 import com.bograntex.bograntexAdmin.view.MainView;
+import com.bograntex.bograntexAdmin.view.RegisterView;
 import com.google.common.eventbus.Subscribe;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
@@ -44,14 +47,12 @@ public class AppUI extends UI {
 
         // Some views need to be aware of browser resize events so a
         // BrowserResizeEvent gets fired to the event bus on every occasion.
-        Page.getCurrent().addBrowserWindowResizeListener(
-                new BrowserWindowResizeListener() {
-                    @Override
-                    public void browserWindowResized(
-                            final BrowserWindowResizeEvent event) {
-                        DashboardEventBus.post(new BrowserResizeEvent());
-                    }
-                });
+        Page.getCurrent().addBrowserWindowResizeListener(new BrowserWindowResizeListener() {
+            @Override
+            public void browserWindowResized(final BrowserWindowResizeEvent event) {
+                DashboardEventBus.post(new BrowserResizeEvent());
+            }
+        });
     }
 
     /**
@@ -74,9 +75,25 @@ public class AppUI extends UI {
 
     @Subscribe
     public void userLoginRequested(final UserLoginRequestedEvent event) {
-        User user = getDataProvider().authenticate(event.getUserName(), event.getPassword());
-        VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
-        updateContent();
+    	String page = (String) VaadinSession.getCurrent().getAttribute("NAVIGATE_PAGE");
+    	if(page.equals("PAGE_PRIMEIRO_ACESSO")) {
+    		setContent(new RegisterView());
+            addStyleName("loginview");
+    	} else {
+    		User user = getDataProvider().authenticate(event.getUserName(), event.getPassword());
+    		VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
+    		updateContent();
+    		
+    	}
+    	
+//		try {
+//			user = UserData.authenticate(event.getUserName(), event.getPassword());
+//			VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
+//	        updateContent();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+        
     }
 
     @Subscribe

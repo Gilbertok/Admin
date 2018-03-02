@@ -31,9 +31,7 @@ import com.vaadin.ui.themes.ValoTheme;
 public final class ContabilidadeView extends VerticalLayout implements View {
 
     private final Grid<BalancoLojaModel> grid;
-    private SingleSelect<BalancoLojaModel> singleSelect;
     private Button createReport;
-    private static final DateFormat DATEFORMAT = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
     private static final DecimalFormat DECIMALFORMAT = new DecimalFormat("#.##");
     private static final Set<Column<BalancoLojaModel, ?>> collapsibleColumns = new LinkedHashSet<>();
 
@@ -46,15 +44,25 @@ public final class ContabilidadeView extends VerticalLayout implements View {
         addComponent(buildToolbar());
 
         grid = buildGridTeste();
-        singleSelect = grid.asSingleSelect();
         addComponent(grid);
         setExpandRatio(grid, 1);
     }
 
     @Override
     public void detach() {
-        super.detach();
+    	super.detach();
     }
+    
+    @Override
+    public void attach() {
+    	super.attach();
+        try {
+			grid.setItems(new BalancoLojaModel().geraBalancoLojaMes());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+    
 
     private Component buildToolbar() {
         HorizontalLayout header = new HorizontalLayout();
@@ -86,18 +94,12 @@ public final class ContabilidadeView extends VerticalLayout implements View {
     	Grid<BalancoLojaModel> grid = new Grid<>();
     	grid.setSelectionMode(SelectionMode.SINGLE);
     	grid.setSizeFull();
-    	grid.addColumn(BalancoLojaModel::getCnpjLojaFormat).setCaption("Cnpj");
+    	grid.addColumn(BalancoLojaModel::getCnpjLojaFormat).setCaption("CNPJ");
 //    	grid.addColumn(BalancoLojaModel::getItem).setCaption("Item");
     	grid.addColumn(BalancoLojaModel::getEan13).setCaption("Ean13");
-    	grid.addColumn(BalancoLojaModel::getMes).setCaption("Mes");
-    	grid.addColumn(BalancoLojaModel::getAno).setCaption("Ano");
+    	grid.addColumn(BalancoLojaModel::getMesAno).setCaption("Mes");
     	grid.addColumn(BalancoLojaModel::getQtdeEstoque).setCaption("Quantidade");
     	grid.addColumn(BalancoLojaModel::getPrecoMedio).setCaption("Preço Médio");
-    	try {
-			grid.setItems(new BalancoLojaModel().geraBalancoLojaMes());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
     	return grid;
     }
 

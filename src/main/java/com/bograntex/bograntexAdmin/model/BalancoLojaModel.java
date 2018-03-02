@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.bograntex.bograntexAdmin.data.erp.LojaBalancoData;
+import com.bograntex.bograntexAdmin.data.erp.ProdutoData;
 import com.bograntex.bograntexAdmin.domain.erp.LojaBalancoDao;
 
 public class BalancoLojaModel {
@@ -20,8 +21,8 @@ public class BalancoLojaModel {
     private Float precoMedio;
 	
 	public List<BalancoLojaModel> geraBalancoLojaMes() throws SQLException {
+		ProdutoData data = new ProdutoData();
 		List<BalancoLojaModel> retorno = new ArrayList<>();
-		
 		List<LojaBalancoDao> balancos = LojaBalancoData.getBalancoLojaMes(8, 2017);
 		for (LojaBalancoDao dao : balancos) {
 			BalancoLojaModel model = new BalancoLojaModel();
@@ -30,18 +31,15 @@ public class BalancoLojaModel {
 			model.setMes(dao.getMes());
 			model.setAno(dao.getAno());
 			model.setQtdeEstoque(dao.getQtdeEstoque());
+//			model.setPrecoMedio(data.getPrecoMedioProdutoFromEan13AndCnpjAteData(model.getCnpjLojaFormat(), model.getEan13(), model.getMesAno()));
 			retorno.add(model);
 		}
 		return retorno;
 	}
 	
-	private Float getPrecoMedioItem(String ean13) {
-		return null;
-	}
-	
 	public String getCnpjLojaFormat() {
 		Pattern pattern = Pattern.compile("(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})");
-		Matcher matcher = pattern.matcher(cnpjLoja);
+		Matcher matcher = pattern.matcher(cnpjLoja.substring(1, 15));
 		if(matcher.find()){
 			return matcher.replaceAll("$1.$2.$3/$4-$5");
 		}
@@ -71,6 +69,11 @@ public class BalancoLojaModel {
 	public void setEan13(String ean13) {
 		this.ean13 = ean13;
 	}
+	
+	public String getMesAno() {
+		return mes.concat("/").concat(ano);
+	}
+
 
 	public String getMes() {
 		return mes;

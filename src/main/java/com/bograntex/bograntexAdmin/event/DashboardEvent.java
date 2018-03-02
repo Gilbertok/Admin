@@ -26,7 +26,7 @@ public abstract class DashboardEvent {
 			return password;
 		}
 	}
-
+	
 	public static class BrowserResizeEvent {
 
 	}
@@ -75,10 +75,8 @@ public abstract class DashboardEvent {
 		}
 	}
 
-	public static class CloseOpenWindowsEvent {
-	}
+	public static class CloseOpenWindowsEvent {}
 
-	public static class ProfileUpdatedEvent {
-	}
+	public static class ProfileUpdatedEvent {}
 
 }

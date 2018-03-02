@@ -7,7 +7,8 @@ import com.vaadin.server.Resource;
 
 public enum AppViewType {
     
-	CONTABILIDADE("contabilidade", ContabilidadeView.class, VaadinIcons.MONEY_EXCHANGE, true);
+	CONTABILIDADE("contabilidade", ContabilidadeView.class, VaadinIcons.MONEY_EXCHANGE, true),
+	DEVEDORES("devedores", ContabilidadeView.class, VaadinIcons.MONEY_EXCHANGE, false);
 
     private final String viewName;
     private final Class<? extends View> viewClass;

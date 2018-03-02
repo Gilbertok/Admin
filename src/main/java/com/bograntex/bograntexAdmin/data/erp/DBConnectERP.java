@@ -7,14 +7,13 @@ import oracle.jdbc.pool.OracleDataSource;
 
 public class DBConnectERP {
 	
-	String server = "192.168.1.7";
-    String port = "1521";
-    String database = "dbsystex";
+	private String server = "192.168.1.7";
+    private String database = "dbsystex";
 //    String database = "TESTE";
     
-    String user = "bg";
-    String passwd = "oracle";
-    Connection con = null;
+    private String user = "bg";
+    private String passwd = "oracle";
+    private Connection con = null;
 	
 	public Connection getInstance() throws SQLException {
 		if(con == null) {
