@@ -9,16 +9,9 @@
 	<classpath>
 		<dir name="D:/DEV/Admin/target/classes">
 		</dir>
-		<dir name="D:/DEV/Admin/target/test-classes">
-		</dir>
 	</classpath>
 
 	<web>
-		<link target="/">
-			<dir name="D:/DEV/Admin/target/m2e-wtp/web-resources">
-				<exclude name="/"/>
-			</dir>
-		</link>
 		<link target="/">
 			<dir name="D:/DEV/Admin/src/main/webapp">
 			</dir>

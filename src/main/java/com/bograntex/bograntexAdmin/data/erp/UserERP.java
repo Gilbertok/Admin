@@ -32,5 +32,24 @@ public class UserERP {
 			return null;
 		}
 	}
+	
+	public static String getEmailUsuarioERP(String userName) throws SQLException {
+		String email = new String();
+		Connection conn = AppDataConnect.getInstanceERP();
+		String SQL = "SELECT " + 
+					"    USUARIO.E_MAIL " + 
+					"FROM HDOC_030 USUARIO " + 
+					"WHERE USUARIO.USUARIO = ? ";
+		PreparedStatement stmt = conn.prepareStatement(SQL);
+		stmt.setString(1, userName.toUpperCase());
+		ResultSet res = stmt.executeQuery();
+		stmt.setMaxRows(1);
+		if(res.next()) {
+			email = res.getString("E_MAIL");
+		}
+		return email;
+	}
+	
+	
 
 }

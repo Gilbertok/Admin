@@ -1,6 +1,5 @@
 package com.bograntex.bograntexAdmin;
 
-import java.sql.SQLException;
 import java.util.Locale;
 
 import com.bograntex.bograntexAdmin.data.DataProvider;
@@ -24,6 +23,7 @@ import com.vaadin.server.Page.BrowserWindowResizeListener;
 import com.vaadin.server.Responsive;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.Notification;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.Window;
 import com.vaadin.ui.themes.ValoTheme;
@@ -62,38 +62,45 @@ public class AppUI extends UI {
      */
     private void updateContent() {
         User user = (User) VaadinSession.getCurrent().getAttribute(User.class.getName());
-        if (user != null && "admin".equals(user.getRole())) {
-            // Authenticated user
-            setContent(new MainView());
-            removeStyleName("loginview");
-            getNavigator().navigateTo(getNavigator().getState());
+        if(user == null) {
+        	String page = (String) VaadinSession.getCurrent().getAttribute("NAVIGATE_PAGE");
+        	if(page != null && page.equals("PAGE_PRIMEIRO_ACESSO")) {
+        		setContent(new RegisterView());
+                addStyleName("loginview");
+                VaadinSession.getCurrent().setAttribute("NAVIGATE_PAGE", "");
+        	} else if (page != null && page.equals("PAGE_LOGIN")) {
+        		setContent(new LoginView());
+                addStyleName("loginview");
+                VaadinSession.getCurrent().setAttribute("NAVIGATE_PAGE", "");
+        	} else {
+        		setContent(new LoginView());
+        		addStyleName("loginview");
+        	}
         } else {
-            setContent(new LoginView());
-            addStyleName("loginview");
+        	if ("admin".equals(user.getRole())) {
+                // Authenticated user
+                setContent(new MainView());
+                removeStyleName("loginview");
+                getNavigator().navigateTo(getNavigator().getState());
+            }
         }
     }
 
     @Subscribe
-    public void userLoginRequested(final UserLoginRequestedEvent event) {
+    public void userLoginRequested(final UserLoginRequestedEvent event) throws Exception {
     	String page = (String) VaadinSession.getCurrent().getAttribute("NAVIGATE_PAGE");
-    	if(page.equals("PAGE_PRIMEIRO_ACESSO")) {
-    		setContent(new RegisterView());
-            addStyleName("loginview");
+    	if(page==null) {
+    		UserData.authenticate(event.getUserName(), event.getPassword());
+    		User user = (User) VaadinSession.getCurrent().getAttribute("USER_LOGIN");
+    		if (user == null) {
+    			Notification.show("Erro", "Usuário ou senha não conferem!", Notification.Type.ERROR_MESSAGE);
+    		} else {
+    			VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
+    			updateContent();
+    		}
     	} else {
-    		User user = getDataProvider().authenticate(event.getUserName(), event.getPassword());
-    		VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
     		updateContent();
-    		
     	}
-    	
-//		try {
-//			user = UserData.authenticate(event.getUserName(), event.getPassword());
-//			VaadinSession.getCurrent().setAttribute(User.class.getName(), user);
-//	        updateContent();
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}
-        
     }
 
     @Subscribe
